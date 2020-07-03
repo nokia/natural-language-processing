@@ -22,6 +22,24 @@ iterables3 = {'bbb', 'aa'}
 
 class TestLearningDistance(unittest.TestCase):
 
+    def test_learn_correct_interval_target(self):
+        iterable0 = ('a', 'a', 'a', 'b')
+        iterable1 = ('a', 'a', 'a', 'b')
+        iterable2 = ('a', 'a', 'b', 'b')
+        iterable3 = ('a', 'c')
+        all_iterables = [iterable0, iterable1, iterable2, iterable3]
+        item_weights = {'a': 1., 'b': 2., 'c': 0.5}
+        iterable_weights = {iterable0: 1., iterable1: 1., iterable2: 1., iterable3: 1.}
+        interval_true_distance = (0.1, 0.2)
+        oracle_claim = OracleClaim(({iterable0, iterable1}, {iterable1, iterable3}), interval_true_distance)
+        learning_distance = LearningDistance(all_iterables, item_to_weight=item_weights,
+                                             iterable_to_weight=iterable_weights)
+        # old_distance = learning_distance(oracle_claim.iterables_pair[0], oracle_claim.iterables_pair[1])
+        learning_distance.learn({oracle_claim}, ratio_item_iterable_learning=1., number_of_iterations=5,
+                                convergence_speed=0.5)
+        new_distance = learning_distance(oracle_claim.iterables_pair[0], oracle_claim.iterables_pair[1])
+        self.assertTrue(abs(new_distance - 0.1) < abs(new_distance - 0.2))
+
     def test_learn(self):
         current_distance0 = distance(iterables0, iterables1)
         target_distance0 = current_distance0 * 2.
@@ -72,13 +90,13 @@ class TestLearningDistance(unittest.TestCase):
         expected = matrix[0][0] * r00 + matrix[0][1] * r01 + matrix[1][0] * r10 + matrix[1][1] * r11
         self.assertTrue(are_equal_vectors(expected, computed))
 
-    def test_rescale_vector_and_add_one(self):
+    def test_rescale_vector_from_gradient_and_effort(self):
         vector = create_vector([6, 4, -2, 0])
-        computed = rescale_vector_and_add_one(vector)
+        computed = rescale_vector_from_gradient_and_effort(vector, 1.)
         expected = create_vector([1 + 6/2, 1 + 4/2, 1 + -2/2, 1])
         self.assertTrue(are_equal_vectors(expected, computed))
         vector = create_vector([0, 1, 2, 3])
-        computed = rescale_vector_and_add_one(vector)
+        computed = rescale_vector_from_gradient_and_effort(vector, 1.)
         expected = create_vector([1, 2, 3, 4])
         self.assertTrue(are_equal_vectors(expected, computed))
 
@@ -89,3 +107,66 @@ def random_vector(length):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+"""
+# -------------   DRAFT   --------------- #
+
+from learning_distance import LearningDistance
+from oracle_claim import OracleClaim
+
+def normalize_distribution(distribution):
+    normalization_factor = sum(distribution.values())
+    return {item: value / normalization_factor for item, value in distribution.items()}
+    
+    
+iterable0 = ('a', 'a', 'a', 'b')
+iterable1 = ('a', 'a', 'a', 'b')
+iterable2 = ('a', 'a', 'b', 'b')
+iterable3 = ('a', 'c')
+all_iterables = [iterable0, iterable1, iterable2, iterable3]
+item_weights = {'a': 1., 'b': 2., 'c': 0.5}
+iterable_weights = {iterable0: 1., iterable1: 1., iterable2: 1., iterable3: 1.}
+interval_true_distance = (0.1, 0.2)
+oracle_claim = OracleClaim(({iterable0, iterable1}, {iterable1, iterable3}), interval_true_distance)
+learning_distance = LearningDistance(all_iterables, item_to_weight=item_weights,
+                                        iterable_to_weight=iterable_weights)
+print(normalize_distribution(learning_distance.get_item_weights()))
+old_distance = learning_distance(oracle_claim.iterables_pair[0], oracle_claim.iterables_pair[1])
+print(old_distance)
+learning_distance.learn({oracle_claim}, ratio_item_iterable_learning=1., number_of_iterations=5,
+                        convergence_speed=0.5)
+print(normalize_distribution(learning_distance.get_item_weights()))
+new_distance = learning_distance(oracle_claim.iterables_pair[0], oracle_claim.iterables_pair[1])
+print(new_distance)
+
+
+
+iterable0 = ('a', 'a', 'a', 'b')
+iterable1 = ('a', 'a', 'a', 'b')
+iterable2 = ('a', 'a', 'b', 'b')
+iterable3 = ('a', 'c')
+all_iterables = [iterable0, iterable1, iterable2, iterable3]
+item_weights = {'a': 1., 'b': 2., 'c': 0.5}
+iterable_weights = {iterable0: 1., iterable1: 1., iterable2: 1., iterable3: 1.}
+learning_distance = LearningDistance(all_iterables, item_to_weight=item_weights, iterable_to_weight=iterable_weights)
+print(normalize_distribution(learning_distance.get_item_weights()))
+# {'a': 0.2857142857142857, 'b': 0.5714285714285714, 'c': 0.14285714285714285}
+print(learning_distance({iterable0, iterable1}, {iterable1, iterable3}))
+# 0.004282674925764063
+
+oracle_claim = OracleClaim(({iterable0, iterable1}, {iterable1, iterable3}), (0.1, 0.2))
+set_of_claims = {oracle_claim}
+learning_distance.learn(set_of_claims, ratio_item_iterable_learning=1., number_of_iterations=100, convergence_speed=0.1)
+print(normalize_distribution(learning_distance.get_item_weights()))
+
+print(learning_distance({iterable0, iterable1}, {iterable1, iterable3}))
+# 0.2007295884897502 ???
+
+
+vector delta (unitary?)
+distance to target
+distance to setting a weight to 0
+number of steps
+speed of convergence
+"""

@@ -34,9 +34,11 @@ class Distance(VectorSpace):
         return vectorization
 
     def set_item_weights(self, item_to_weight):
+        item_to_weight = normalize_distribution(item_to_weight)
         self.item_weights_vector = self.item_vector_from_dict(item_to_weight)
 
     def set_iterable_weights(self, iterable_to_weight):
+        iterable_to_weight = normalize_distribution(iterable_to_weight)
         self.iterable_weights_vector = self.iterable_vector_from_dict(iterable_to_weight)
 
     def get_item_weights(self):
@@ -69,3 +71,8 @@ def log_of_ratio_zero_if_null_denominator(numerator, denominator):
     if denominator == 0:
         return 0.
     return math.log(numerator / denominator)
+
+
+def normalize_distribution(distribution):
+    normalization_factor = sum(distribution.values())
+    return {item: value / normalization_factor for item, value in distribution.items()}

@@ -113,3 +113,20 @@ def create_vector(coefficients):
 
 def are_equal_vectors(vector0, vector1):
     return np.array_equal(vector0, vector1)
+
+
+def are_almost_equal_vectors(vector0, vector1):
+    if len(vector0) != len(vector1):
+        return False
+    for index in range(len(vector0)):
+        if not math.isclose(vector0[index], vector1[index]):
+            return False
+    return True
+
+
+def are_almost_colinear_vectors(vector0, vector1):
+    if is_zero_vector(vector0):
+        return True
+    for index in range(len(vector0)):
+        if vector0[index] != 0.:
+            return are_almost_equal_vectors(vector0 / vector0[index] * vector1[index], vector1)

@@ -189,7 +189,7 @@ Provide the methods
           number_of_iterations=DEFAULT_NUMBER_OF_ITERATIONS)
     learning_loop_on_oracle_claims(self, oracle_claims, ratio_item_iterable_learning=0.5, effort=1.)
     learn_from_one_oracle_claim(self, oracle_claim, ratio_item_iterable_learning=0.5, effort=1.)
-    get_rescaling_vectors(self, enriched_oracle_claim, ratio_item_iterable_learning)
+    compute_rescaling_vectors(self, enriched_oracle_claim, ratio_item_iterable_learning)
 
 Also define the class 'EnrichedOracleClaim', used to avoid
 duplicate computations during the treatment of an oracle claim.

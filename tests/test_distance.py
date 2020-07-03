@@ -22,16 +22,17 @@ class MyTestCase(unittest.TestCase):
     def test_vectorize(self):
         vector0 = distance.vectorize(iterables0)
         vector1 = distance.vectorize(iterables1)
-        self.assertTrue(are_equal_vectors(vector0, create_vector([2, 4])) or
-                        are_equal_vectors(vector0, create_vector([4, 2])))
-        self.assertTrue(are_equal_vectors(vector1, create_vector([0, 18])) or
-                        are_equal_vectors(vector1, create_vector([18, 0])))
-        self.assertTrue(are_equal_vectors(vector0 + vector1, distance.vectorize({'ab', 'bbb'})))
+        self.assertTrue(are_almost_colinear_vectors(vector0, create_vector([2, 4])) or
+                        are_almost_colinear_vectors(vector0, create_vector([4, 2])))
+        self.assertTrue(are_almost_colinear_vectors(vector1, create_vector([0, 18])) or
+                        are_almost_colinear_vectors(vector1, create_vector([18, 0])))
+        self.assertTrue(are_almost_colinear_vectors(vector0 + vector1, distance.vectorize({'ab', 'bbb'})))
 
     def test_tfidf(self):
         tfidf_distance = Distance(iterables)
-        self.assertTrue(are_equal_vectors(tfidf_distance.item_weights_vector,
-                                          create_vector([math.log(3/2), math.log(3/2)])))
+        expected_item_weights_vector = create_vector([math.log(3/2), math.log(3/2)])
+        expected_item_weights_vector /= sum(expected_item_weights_vector)
+        self.assertTrue(are_equal_vectors(tfidf_distance.item_weights_vector, expected_item_weights_vector))
 
     def test_verbose_distance(self):
         d, iv0, vz0, n0, iv1, vz1, n1 = distance.verbose_distance(iterables0, iterables1)
